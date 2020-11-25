@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -66,6 +67,22 @@ namespace ServerApp.Controllers
 
             return BadRequest(ModelState);
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCategory(long id)
+        {
+            try
+            {
+                context.Categories.Remove(new Category {Id = id});
+                context.SaveChanges();
+                return Ok();
+            }
+            catch (DbUpdateException e)
+            {
+                return BadRequest("There are product that dependencies from this category!");
+            }
+            
+        }
         
         [HttpPost("group")]
         public IActionResult CreatePropertieGroup([FromBody] GroupPropertiesData gpData)
@@ -101,6 +118,23 @@ namespace ServerApp.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        [HttpDelete("group/{id}")]
+        public IActionResult DeleteGroup(long id)
+        {
+            try
+            {
+                context.Set<GroupProperty>()
+                    .Remove(new GroupProperty {Id = id});
+                context.SaveChanges();
+                return Ok();
+            }
+            catch (DbUpdateException e)
+            {
+                return BadRequest("There are products that contains group " +
+                                  "values dependencies from this group!");
+            }
         }
         
         [HttpPost("property")]
@@ -139,6 +173,23 @@ namespace ServerApp.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        [HttpDelete("property/{id}")]
+        public IActionResult DeleteProperty(long id)
+        {
+            try
+            {
+                context.Set<Property>()
+                    .Remove(new Property {Id = id});
+                context.SaveChanges();
+                return Ok();
+            }
+            catch (DbUpdateException e)
+            {
+                return BadRequest("There are products that contains property " +
+                                  "value dependencies from this property!");
+            }
         }
     }
 }

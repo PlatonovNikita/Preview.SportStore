@@ -55,62 +55,6 @@ namespace ServerApp.Controllers
             return product;
         }
 
-        [HttpGet]
-        public IEnumerable<Product> GetProducts(string search = null, string category = null, 
-            bool? inStock = null, decimal? minPrice = null, decimal? maxPrice = null)
-        {
-            //[FromBody]IEnumerable<IntLine> ints = null, [FromBody]IEnumerable<BoolLine> bools = null
-            IQueryable<Product> query = context.Products;
-            if (inStock != null)
-            {
-                query = query.Where(p => p.InStock == inStock);
-            }
-
-            if (minPrice != null)
-            {
-                query = query.Where(p => p.Price >= minPrice);
-            }
-
-            if (maxPrice != null)
-            {
-                query = query.Where(p => p.Price <= maxPrice);
-            }
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                string lowerSearch = search.ToLower();
-                query = query.Where(p => p.Name.ToLower().Contains(lowerSearch));
-            }
-
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                string lowerCat = category.ToLower();
-                query = query.Where(p => p.Category.Name.ToLower().Contains(lowerCat));
-            }
-
-            /*if (ints != null)
-            {
-                var dictInts = ints.ToDictionary(i => i.PropertyId);
-                query = query.Where(p =>
-                    p.GroupsValues.Any(gv =>
-                        gv.IntProps.Any(i =>
-                            dictInts.ContainsKey(i.PropertyId)
-                            && i.Value == dictInts[i.PropertyId].Value)));
-            }
-
-            if (bools != null)
-            {
-                var dictBools = bools.ToDictionary(b => b.PropertyId);
-                query = query.Where(p =>
-                    p.GroupsValues.Any(gv =>
-                        gv.BoolProps.Any(b =>
-                            dictBools.ContainsKey(b.PropertyId)
-                            && b.Value == dictBools[b.PropertyId].Value)));
-            }*/
-
-            return query;
-        }
-
         [HttpPost]
         public IActionResult CreateProduct([FromBody] ProductData productData)
         {
@@ -176,6 +120,139 @@ namespace ServerApp.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        [HttpDelete("{id}")]
+        public void DeleteProduct(long id)
+        {
+            context.Products.Remove(new Product {Id = id});
+            context.SaveChanges();
+        }
+
+        [HttpDelete("bycategory/{categoryId}")]
+        public void DeleteProducts(long categoryId)
+        {
+            var products = context.Products
+                .Where(p => p.CategoryId == categoryId);
+
+            if (products != null)
+            {
+                context.Products.RemoveRange(products);
+                context.SaveChanges();
+            }
+            
+        }
+
+        [HttpDelete("bygroup/{groupId}")]
+        public void DeleteGroup(long groupId)
+        {
+            var group = context.Set<GroupValues>()
+                .Where(gv => gv.GroupPropertyId == groupId);
+            context.RemoveRange(group);
+            context.SaveChanges();
+        }
+        
+        [HttpGet]
+        public IEnumerable<Product> GetProducts(int? pageSize = null, int? pageNumber = null, 
+            string search = null, string category = null, bool? inStock = null, 
+            decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            IQueryable<Product> query = GetQuery(search, 
+                category, inStock, minPrice, maxPrice);
+            
+            pageSize ??= 4;
+            pageNumber ??= 1;
+
+            return query.Skip((int)((pageNumber - 1) * pageSize)).Take((int)pageSize);
+        }
+
+        [HttpPost("filter")]
+        public IEnumerable<Product> GetProducts([FromBody] SearchLines searchByProperty, 
+            int? pageSize = null, int? pageNumber = null, string search = null, 
+            string category = null, bool? inStock = null, 
+            decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            IQueryable<Product> query = GetQuery(search, 
+                category, inStock, minPrice, maxPrice);
+
+            if (searchByProperty != null)
+            {
+                var doubleSearches = searchByProperty.DSearch;
+                if (doubleSearches != null)
+                {
+                    foreach (var dSearch in doubleSearches)
+                    {
+                        query = query.Where(p => p
+                            .GroupsValues
+                            .Any(gv => gv
+                                .DoubleProps
+                                .Any(i => i.PropertyId == dSearch.PropertyId
+                                          && (dSearch.Min == null || i.Value >= dSearch.Min)
+                                          && (dSearch.Max == null || i.Value <= dSearch.Max)
+                                )
+                            )
+                        );
+                    }
+                }
+
+                var boolSearches = searchByProperty.BSearch;
+                if (boolSearches != null)
+                {
+                    foreach (var bLine in boolSearches)
+                    {
+                        query = query.Where(p => p
+                            .GroupsValues
+                            .Any(gv => gv
+                                .BoolProps
+                                .Any(b => b.PropertyId == bLine.PropertyId
+                                          && (b.Value == bLine.Value)
+                                )
+                            )
+                        );
+                    }
+                }
+            }
+
+            pageSize ??= 4;
+            pageNumber ??= 1;
+
+            return query.Skip((int)((pageNumber - 1) * pageSize)).Take((int)pageSize);
+        }
+
+        [NonAction]
+        private IQueryable<Product> GetQuery(string search = null, 
+            string category = null, bool? inStock = null,
+            decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            IQueryable<Product> query = context.Products;
+            if (inStock != null)
+            {
+                query = query.Where(p => p.InStock == inStock);
+            }
+
+            if (minPrice != null)
+            {
+                query = query.Where(p => p.Price >= minPrice);
+            }
+
+            if (maxPrice != null)
+            {
+                query = query.Where(p => p.Price <= maxPrice);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                string lowerSearch = search.ToLower();
+                query = query.Where(p => p.Name.ToLower().Contains(lowerSearch));
+            }
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                string lowerCat = category.ToLower();
+                query = query.Where(p => p.Category.Name.ToLower().Contains(lowerCat));
+            }
+
+            return query;
         }
     }
 }

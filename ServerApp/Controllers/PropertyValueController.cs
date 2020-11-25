@@ -120,6 +120,22 @@ namespace ServerApp.Controllers
             return BadRequest(ModelState);
         }
 
+        [HttpDelete("byproperty/{propertyId}")]
+        public void DeleteProperty(long propertyId)
+        {
+            var dl = context.Set<DoubleLine>().
+                Where(d => d.PropertyId == propertyId);
+            var bl = context.Set<BoolLine>()
+                .Where(b => b.PropertyId == propertyId);
+            var sl = context.Set<StrLine>()
+                .Where(s => s.PropertyId == propertyId);
+            
+            context.RemoveRange(bl);
+            context.RemoveRange(dl);
+            context.RemoveRange(sl);
+            context.SaveChanges();
+        }
+
         [NonAction]
         public IActionResult CheckValidProperty(BaseLineData data)
         {
