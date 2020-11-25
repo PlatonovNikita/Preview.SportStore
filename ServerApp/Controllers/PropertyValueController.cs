@@ -15,15 +15,15 @@ namespace ServerApp.Controllers
         public PropertyValueController(StoreContext _context)
             => context = _context;
         
-        [HttpPost("iproperty")]
-        public IActionResult CreatePropertyInt([FromBody] IntLineData intData)
+        [HttpPost("dproperty")]
+        public IActionResult CreatePropertyInt([FromBody] DoubleLineData doubleData)
         {
             if (ModelState.IsValid)
             {
-                var check = CheckValidProperty(intData);
+                var check = CheckValidProperty(doubleData);
                 if (check != null) return check;
                 
-                var intProp = intData.IntLine;
+                var intProp = doubleData.DoubleLine;
                 context.Add(intProp);
                 context.SaveChanges();
                 return Ok(intProp.Id);
@@ -32,12 +32,12 @@ namespace ServerApp.Controllers
             return BadRequest(ModelState);
         }
         
-        [HttpPut("iproperty/{id}")]
-        public IActionResult ReplacePropertyInt(long id, [FromBody][Required] int value)
+        [HttpPut("dproperty/{id}")]
+        public IActionResult ReplacePropertyInt(long id, [FromBody][Required] double value)
         {
             if (ModelState.IsValid)
             {
-                var intProp = context.Set<IntLine>()
+                var intProp = context.Set<DoubleLine>()
                     .FirstOrDefault(i => i.Id == id);
                 if (intProp == null) return Problem("Id is not valid");
                 

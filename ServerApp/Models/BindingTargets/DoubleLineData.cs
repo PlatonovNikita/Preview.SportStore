@@ -2,12 +2,12 @@
 
 namespace ServerApp.Models.BindingTargets
 {
-    public class IntLineData : BaseLineData
+    public class DoubleLineData : BaseLineData
     {
         [Required]
-        public int Value { get; set; }
+        public double Value { get; set; }
 
-        public IntLine IntLine => new IntLine
+        public DoubleLine DoubleLine => new DoubleLine
         {
             Value = Value, PropertyId = PropertyId,
             GroupValuesId = GroupValuesId

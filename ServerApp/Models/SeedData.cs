@@ -17,11 +17,11 @@ namespace ServerApp.Models
                         Properties = new [] {
                             new Property {
                                 Name = "Max Speed",
-                                PropType = PropertyType.Int
+                                PropType = PropertyType.Double
                             },
                             new Property {
                                 Name = "Weight",
-                                PropType = PropertyType.Int
+                                PropType = PropertyType.Double
                             }, 
                         }
                     } 
@@ -36,7 +36,7 @@ namespace ServerApp.Models
                         Properties = new [] {
                             new Property {
                                 Name = "Weight",
-                                PropType = PropertyType.Int
+                                PropType = PropertyType.Double
                             },
                             new Property {
                                 Name = "Features",
@@ -60,12 +60,12 @@ namespace ServerApp.Models
                 GroupsValues = new [] {
                     new GroupValues {
                         GroupPropertyId = groupC1.Id,
-                        IntProps = new [] {
-                            new IntLine {
+                        DoubleProps = new [] {
+                            new DoubleLine {
                                 Value = 15,
                                 PropertyId = groupC1.Properties.First(p => p.Name == "Max Speed").Id
                             }, 
-                            new IntLine {
+                            new DoubleLine {
                                 Value = 40,
                                 PropertyId = groupC1.Properties.First(p => p.Name == "Weight").Id
                             }, 
@@ -82,12 +82,12 @@ namespace ServerApp.Models
                 GroupsValues = new [] {
                     new GroupValues {
                         GroupPropertyId = groupC1.Id,
-                        IntProps = new [] {
-                            new IntLine {
+                        DoubleProps = new [] {
+                            new DoubleLine {
                                 Value = 30,
                                 PropertyId = groupC1.Properties.First(p => p.Name == "Max Speed").Id
                             }, 
-                            new IntLine {
+                            new DoubleLine {
                                 Value = 20,
                                 PropertyId = groupC1.Properties.First(p => p.Name == "Weight").Id
                             }, 
@@ -106,8 +106,8 @@ namespace ServerApp.Models
                 GroupsValues = new [] {
                     new GroupValues {
                         GroupPropertyId = groupC2.Id,
-                        IntProps = new [] {
-                            new IntLine {
+                        DoubleProps = new [] {
+                            new DoubleLine {
                                 Value = 20,
                                 PropertyId = groupC2.Properties.First(p => p.Name == "Weight").Id
                             },
@@ -130,8 +130,8 @@ namespace ServerApp.Models
                 GroupsValues = new [] {
                     new GroupValues {
                         GroupPropertyId = groupC2.Id,
-                        IntProps = new [] {
-                            new IntLine {
+                        DoubleProps = new [] {
+                            new DoubleLine {
                                 Value = 27,
                                 PropertyId = groupC2.Properties.First(p => p.Name == "Weight").Id
                             },

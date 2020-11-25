@@ -30,7 +30,7 @@ namespace ServerApp.Controllers
                 .ThenInclude(c => c.GroupProperties)
                 .ThenInclude(gp => gp.Properties)
                 .Include(p => p.GroupsValues)
-                .ThenInclude(gv => gv.IntProps)
+                .ThenInclude(gv => gv.DoubleProps)
                 .Include(p => p.GroupsValues)
                 .ThenInclude(gv => gv.StrProps)
                 .Include(p => p.GroupsValues)

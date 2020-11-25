@@ -12,7 +12,7 @@ namespace ServerApp.Models
         
         public long ProductId { get; set; }
         
-        public IEnumerable<IntLine> IntProps { get; set; }
+        public IEnumerable<DoubleLine> DoubleProps { get; set; }
         public IEnumerable<BoolLine> BoolProps { get; set; }
         public IEnumerable<StrLine> StrProps { get; set; }
     }

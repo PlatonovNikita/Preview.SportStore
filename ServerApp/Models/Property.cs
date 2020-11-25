@@ -3,7 +3,7 @@
     public enum PropertyType
     {
         Bool = 0,
-        Int = 1,
+        Double = 1,
         Str = 2
     }
     public class Property

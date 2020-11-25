@@ -1,9 +1,9 @@
 ﻿namespace ServerApp.Models
 {
-    public class IntLine
+    public class DoubleLine
     {
         public long Id { get; set; }
-        public int Value { get; set; }
+        public double Value { get; set; }
         
         public long? PropertyId { get; set; }
         public Property Property { get; set; }

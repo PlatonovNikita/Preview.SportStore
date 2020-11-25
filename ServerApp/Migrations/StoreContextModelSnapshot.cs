@@ -29,7 +29,7 @@ namespace ServerApp.Migrations
                     b.Property<long>("GroupValuesId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("PropertyId")
+                    b.Property<long?>("PropertyId")
                         .HasColumnType("bigint");
 
                     b.Property<bool>("Value")
@@ -57,6 +57,31 @@ namespace ServerApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("ServerApp.Models.DoubleLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("GroupValuesId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("PropertyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupValuesId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.ToTable("DoubleLine");
                 });
 
             modelBuilder.Entity("ServerApp.Models.GroupProperty", b =>
@@ -99,31 +124,6 @@ namespace ServerApp.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("GroupValues");
-                });
-
-            modelBuilder.Entity("ServerApp.Models.IntLine", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long>("GroupValuesId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("PropertyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Value")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupValuesId");
-
-                    b.HasIndex("PropertyId");
-
-                    b.ToTable("IntLine");
                 });
 
             modelBuilder.Entity("ServerApp.Models.Product", b =>
@@ -188,7 +188,7 @@ namespace ServerApp.Migrations
                     b.Property<long>("GroupValuesId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("PropertyId")
+                    b.Property<long?>("PropertyId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Value")
@@ -213,9 +213,20 @@ namespace ServerApp.Migrations
 
                     b.HasOne("ServerApp.Models.Property", "Property")
                         .WithMany()
-                        .HasForeignKey("PropertyId")
+                        .HasForeignKey("PropertyId");
+                });
+
+            modelBuilder.Entity("ServerApp.Models.DoubleLine", b =>
+                {
+                    b.HasOne("ServerApp.Models.GroupValues", null)
+                        .WithMany("IntProps")
+                        .HasForeignKey("GroupValuesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("ServerApp.Models.Property", "Property")
+                        .WithMany()
+                        .HasForeignKey("PropertyId");
                 });
 
             modelBuilder.Entity("ServerApp.Models.GroupProperty", b =>
@@ -238,19 +249,6 @@ namespace ServerApp.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ServerApp.Models.IntLine", b =>
-                {
-                    b.HasOne("ServerApp.Models.GroupValues", null)
-                        .WithMany("IntProps")
-                        .HasForeignKey("GroupValuesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ServerApp.Models.Property", "Property")
-                        .WithMany()
-                        .HasForeignKey("PropertyId");
                 });
 
             modelBuilder.Entity("ServerApp.Models.Product", b =>
@@ -279,9 +277,7 @@ namespace ServerApp.Migrations
 
                     b.HasOne("ServerApp.Models.Property", "Property")
                         .WithMany()
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PropertyId");
                 });
 #pragma warning restore 612, 618
         }
