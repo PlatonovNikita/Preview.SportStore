@@ -10,7 +10,7 @@ namespace ServerApp.Models.BindingTargets
         public BoolLine BoolLine => new BoolLine
         {
             Value = Value, PropertyId = PropertyId,
-            GroupValuesId = GroupValuesId
+            //GroupValuesId = GroupValuesId
         };
     }
 }

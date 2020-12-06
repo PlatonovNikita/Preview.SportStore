@@ -52,7 +52,7 @@ namespace ServerApp.Controllers
 
 
         [HttpPut("{id}")]
-        public IActionResult ReplaceCategory(long id, [FromBody][Required] string name)
+        public IActionResult ReplaceCategory(long id, [FromBody][Required] CategoryData catData)
         {
             if (ModelState.IsValid)
             {
@@ -60,7 +60,8 @@ namespace ServerApp.Controllers
                     .FirstOrDefault(c => c.Id == id);
                 if (cat == null) return Problem("This id is not valid");
 
-                cat.Name = name;
+                cat.Name = catData.Name;
+                cat.NikName = catData.NikName;
                 context.SaveChanges();
                 return Ok();
             }

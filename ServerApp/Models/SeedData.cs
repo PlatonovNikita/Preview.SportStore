@@ -11,6 +11,7 @@ namespace ServerApp.Models
             if (context.Products.Any()) return;
             var c1 = new Category {
                 Name = "Treadmill",
+                NikName = "treadmill",
                 GroupProperties = new [] {
                     new GroupProperty {
                         Name = "specifications",
@@ -30,6 +31,7 @@ namespace ServerApp.Models
                 
             var c2 = new Category {
                 Name = "Exercise bike",
+                NikName = "ExerciseBike",
                 GroupProperties = new [] {
                     new GroupProperty {
                         Name = "specifications",

@@ -10,7 +10,7 @@ namespace ServerApp.Models.BindingTargets
         public StrLine StrLine => new StrLine
         {
             Value = Value, PropertyId = PropertyId,
-            GroupValuesId = GroupValuesId
+            //GroupValuesId = GroupValuesId
         };
     }
 }

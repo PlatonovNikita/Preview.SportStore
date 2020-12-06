@@ -87,12 +87,14 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!context.Products.Any(p => p.Id == id))
-                    return Problem("This id is not valid");
+                var prod = context.Products.FirstOrDefault(p => p.Id == id);
+                if (prod == null) return Problem("This id is not valid");
                 
                 Product p = productData.Product;
-                p.Id = id;
-                context.Update(p);
+                prod.Name = p.Name;
+                prod.Description = p.Description;
+                prod.Price = p.Price;
+                prod.InStock = p.InStock;
                 context.SaveChanges();
                 return Ok();
             }
@@ -112,9 +114,6 @@ namespace ServerApp.Controllers
             
             if (ModelState.IsValid && TryValidateModel(productData))
             {
-                if (productData.CategoryId != null
-                    && !context.Categories.Any(c => c.Id == productData.CategoryId)) 
-                    return Problem("This id is not valid");
                 context.SaveChanges();
                 return Ok();
             }
@@ -154,11 +153,11 @@ namespace ServerApp.Controllers
         
         [HttpGet]
         public IEnumerable<Product> GetProducts(int? pageSize = null, int? pageNumber = null, 
-            string search = null, string category = null, bool? inStock = null, 
+            string search = null, long? categoryId = null, bool? inStock = null, 
             decimal? minPrice = null, decimal? maxPrice = null)
         {
             IQueryable<Product> query = GetQuery(search, 
-                category, inStock, minPrice, maxPrice);
+                categoryId, inStock, minPrice, maxPrice);
             
             pageSize ??= 4;
             pageNumber ??= 1;
@@ -169,11 +168,11 @@ namespace ServerApp.Controllers
         [HttpPost("filter")]
         public IEnumerable<Product> GetProducts([FromBody] SearchLines searchByProperty, 
             int? pageSize = null, int? pageNumber = null, string search = null, 
-            string category = null, bool? inStock = null, 
+            long? categoryId = null, bool? inStock = null, 
             decimal? minPrice = null, decimal? maxPrice = null)
         {
             IQueryable<Product> query = GetQuery(search, 
-                category, inStock, minPrice, maxPrice);
+                categoryId, inStock, minPrice, maxPrice);
 
             if (searchByProperty != null)
             {
@@ -221,7 +220,7 @@ namespace ServerApp.Controllers
 
         [NonAction]
         private IQueryable<Product> GetQuery(string search = null, 
-            string category = null, bool? inStock = null,
+            long? categoryId = null, bool? inStock = null,
             decimal? minPrice = null, decimal? maxPrice = null)
         {
             IQueryable<Product> query = context.Products;
@@ -240,16 +239,19 @@ namespace ServerApp.Controllers
                 query = query.Where(p => p.Price <= maxPrice);
             }
 
+            if (categoryId != null)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 string lowerSearch = search.ToLower();
                 query = query.Where(p => p.Name.ToLower().Contains(lowerSearch));
-            }
-
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                string lowerCat = category.ToLower();
-                query = query.Where(p => p.Category.Name.ToLower().Contains(lowerCat));
+                if (categoryId == null)
+                {
+                    query = query.Where(p => p.Category.Name.ToLower().Contains(lowerSearch));
+                }
             }
 
             return query;

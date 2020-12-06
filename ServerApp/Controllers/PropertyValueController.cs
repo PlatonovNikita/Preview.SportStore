@@ -22,8 +22,13 @@ namespace ServerApp.Controllers
             {
                 var check = CheckValidProperty(doubleData);
                 if (check != null) return check;
-                
+
+                var groupValuesId = context.Set<GroupValues>()
+                    .First(gv => gv.GroupPropertyId == doubleData.GroupPropertyId
+                                 && gv.ProductId == doubleData.ProductId)
+                    .Id;
                 var intProp = doubleData.DoubleLine;
+                intProp.GroupValuesId = groupValuesId;
                 context.Add(intProp);
                 context.SaveChanges();
                 return Ok(intProp.Id);
@@ -58,7 +63,12 @@ namespace ServerApp.Controllers
                 var check = CheckValidProperty(boolData);
                 if (check != null) return check;
                 
+                var groupValuesId = context.Set<GroupValues>()
+                    .First(gv => gv.GroupPropertyId == boolData.GroupPropertyId 
+                                 && gv.ProductId == boolData.ProductId)
+                    .Id;
                 var boolProp = boolData.BoolLine;
+                boolProp.GroupValuesId = groupValuesId;
                 context.Add(boolProp);
                 context.SaveChanges();
                 return Ok(boolProp.Id);
@@ -93,7 +103,12 @@ namespace ServerApp.Controllers
                 var check = CheckValidProperty(strData);
                 if (check != null) return check;
                 
+                var groupValuesId = context.Set<GroupValues>()
+                    .First(gv => gv.GroupPropertyId == strData.GroupPropertyId 
+                                 && gv.ProductId == strData.ProductId)
+                    .Id;
                 var strProp = strData.StrLine;
+                strProp.GroupValuesId = groupValuesId;
                 context.Add(strProp);
                 context.SaveChanges();
                 return Ok(strProp.Id);
@@ -139,10 +154,15 @@ namespace ServerApp.Controllers
         [NonAction]
         public IActionResult CheckValidProperty(BaseLineData data)
         {
-            if (!context.Set<GroupValues>()
-                .Any(gv => gv.Id == data.GroupValuesId))
+            if (!context.Set<GroupProperty>()
+                .Any(gv => gv.Id == data.GroupPropertyId))
             {
                 return Problem("Group id is not valid");
+            }
+
+            if (!context.Products.Any(p => p.Id == data.ProductId))
+            {
+                return Problem("Product id is not valid");
             }
                 
             if (!context.Set<Property>()

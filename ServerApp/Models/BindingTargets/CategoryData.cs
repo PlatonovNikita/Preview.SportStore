@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ServerApp.Models.BindingTargets
 {
@@ -6,10 +7,15 @@ namespace ServerApp.Models.BindingTargets
     {
         [Required]
         public string Name { get; set; }
+        
+        [Required]
+        [RegularExpression(@"^[A-Za-z]+$")]
+        public string NikName { get; set; }
 
         public Category Category => new Category
         {
-            Name = Name
+            Name = Name,
+            NikName = NikName
         };
     }
 }

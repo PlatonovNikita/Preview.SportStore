@@ -6,8 +6,11 @@ namespace ServerApp.Models.BindingTargets
     {
         [Required]
         public long PropertyId { get; set; }
+
+        [Required]
+        public long GroupPropertyId { get; set; }
         
         [Required]
-        public long GroupValuesId { get; set; }
+        public long ProductId { get; set; }
     }
 }

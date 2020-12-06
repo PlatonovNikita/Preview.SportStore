@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.SpaServices.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +32,12 @@ namespace ServerApp
                 {
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 });
-
+            
+            services.AddSpaStaticFiles(options =>
+            {
+                options.RootPath = "/wwwroot";
+            });
+            
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo {Title = "SportStore API", Version = "v1"});
@@ -51,6 +57,7 @@ namespace ServerApp
             }
 
             app.UseHttpsRedirection();
+            app.UseSpaStaticFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -68,6 +75,11 @@ namespace ServerApp
             app.UseSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "SportStore API");
+            });
+            
+            app.UseSpa(spa =>
+            {
+                spa.UseProxyToSpaDevelopmentServer("http://localhost:4200/");
             });
             
             SeedData.EnsureCreated(context);

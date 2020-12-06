@@ -1,0 +1,22 @@
+﻿<nav class="page__menu menu-page">
+    <div class="menu-page__header">
+        <div class="menu-page__title">Каталог товаров</div>
+        <div class="menu-page__burger">
+            <div class="menu-page__lines">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+    <div class="menu-page__body">
+        <ul class="menu-page__list"
+                *ngFor="let category of categories">
+            <li><a href="#" class="menu-page__link"
+                    [routerLink]="['/table', category.nikName]"
+                    (click)="setFilterByCategory(category.id)">
+                {{category.name}}
+            </a></li>
+        </ul>
+    </div>
+</nav>

@@ -10,7 +10,7 @@ namespace ServerApp.Models.BindingTargets
         public DoubleLine DoubleLine => new DoubleLine
         {
             Value = Value, PropertyId = PropertyId,
-            GroupValuesId = GroupValuesId
+            //GroupValuesId = GroupValuesId
         };
     }
 }
