@@ -1,0 +1,9 @@
+﻿<div *ngIf="lastMessage">
+    <h4>{{lastMessage.text}}</h4>
+</div>
+<div>
+    <button *ngFor="let resp of lastMessage.responses"
+            (click)="resp[1](resp[0])">
+        {{resp[0]}}
+    </button>
+</div>

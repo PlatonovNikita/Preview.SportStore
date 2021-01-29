@@ -1,5 +1,7 @@
 ﻿import {SearchLines} from "../ViewModel/searchLines.model";
+import {Inject, Injectable} from "@angular/core";
 
+@Injectable( )
 export class Filter {
     public pageSize?: number = 9;
     public pageNumber?: number = 1;
@@ -8,7 +10,16 @@ export class Filter {
     public inStock?: boolean = null; 
     public minPrice?: number = null;
     public maxPrice?: number = null; 
-    public searchLines?: SearchLines = null;
+    public _searchLines: SearchLines = new SearchLines();
+    
+    get searchLines(): SearchLines{
+        if (this._searchLines.BSearch.length == 0 
+            && this._searchLines.DSearch.length == 0 
+            && this._searchLines.StrSearch.length == 0){
+            return null;
+        }
+        return this._searchLines;
+    }
     
     reset() {
         this.pageSize = 9;
@@ -17,6 +28,8 @@ export class Filter {
         this.inStock = null;
         this.minPrice = null;
         this.maxPrice = null;
-        this.searchLines = null
+        this._searchLines = new SearchLines();
     }
+    
+    
 }

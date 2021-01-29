@@ -7,6 +7,7 @@ import {HeaderModule} from "./header/header.module";
 import {FooterModule} from "./footer/footer.module";
 import {ModelModule} from "./model/model.module";
 import {StoreModule} from "./store/store.module";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import {StoreModule} from "./store/store.module";
         HeaderModule,
         FooterModule,
         ModelModule,
-        StoreModule
+        StoreModule,
+        BrowserAnimationsModule
     ],
   providers: [],
   bootstrap: [AppComponent]

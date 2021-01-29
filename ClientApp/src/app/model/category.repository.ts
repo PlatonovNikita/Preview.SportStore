@@ -1,8 +1,10 @@
 ﻿import {Category} from "./category/category.model";
-import {HttpClient} from "@angular/common/http";
 import {GroupProperty} from "./category/groupProperty.model";
 import {Property} from "./category/property.model";
-import {Injectable} from "@angular/core";
+import {inject, Injectable} from "@angular/core";
+import {CATEGORY_URL, CategoryRest} from "./category.rest";
+import {MessageService} from "./message/message.service";
+import {ProductRest} from "./product.rest";
 
 const categoryUrl = "/api/categories";
 
@@ -11,100 +13,65 @@ export class CategoryRepository {
 
     categories: Category[] = [];
     category: Category = new Category();
+    search: string;
 
-    constructor(private http: HttpClient) { 
+    constructor(private rest: CategoryRest,
+                private productRest: ProductRest) { 
         this.getCategories();
     }
 
     getCategory(id: number) {
-        this.http.get<Category>(`${categoryUrl}/${id}`)
+        this.rest.getCategory(id)
             .subscribe(c => this.category = c);
     }
 
     getCategories(){
-        this.http.get<Category[]>(`${categoryUrl}`)
+        this.rest.getCategories(this.search)
             .subscribe(c => this.categories = c);
     }
     
     createCategory(category: Category) {
-        let data = {
-            name: category.name
-        };
-        
-        this.http.post<number>(categoryUrl, data)
-            .subscribe(catId => {
-                category.id = catId;
-                category.groupProperties.forEach(gp => {
-                    gp.categoryId = catId;
-                    this.createGroup(gp);
-                });
-            }
-        );
+        this.rest.createCategory(category)
+            .subscribe(() => this.categories.push(category));
     }
     
-    createGroup(group: GroupProperty) {
-        if (group.categoryId != null) {
-            let data = {
-                name: group.name,
-                categoryId: group.categoryId
-            };
-            
-            this.http.post<number>(`${categoryUrl}/group`, data)
-                .subscribe(groupId => {
-                    group.id = groupId;
-                    group.properties.forEach(prop => {
-                        prop.groupPropertyId = groupId;
-                        this.createProperty(prop);
-                    });
-                }
-            );
-        }
+    createGroup(group: GroupProperty, category: Category) {
+        this.rest.createGroup(group)
+            .subscribe(() => category.groupProperties.push(group));
     }
 
-    createProperty(property: Property) {
-        if (property.groupPropertyId != null) {
-            let data = {
-                name: property.name,
-                propertyType: property.propType,
-                groupPropertyId: property.groupPropertyId
-            };
-            
-            this.http.post<number>(`${categoryUrl}/property`, data)
-                .subscribe(propId => property.id = propId);
-        }
+    createProperty(property: Property, group: GroupProperty) {
+        this.rest.createProperty(property)
+            .subscribe(() => group.properties.push(property));
     }
     
     updateCategory(category: Category){
-        if (category.id != null) {
-            this.http.put(`${categoryUrl}/${category.id}`, category.name);
-        }
+        this.rest.updateCategory(category)
+            .subscribe(() => this.getCategories());
     }
     
     updateGroup(group: GroupProperty){
-        if (group.id != null) {
-            this.http.put(`${categoryUrl}/group/${group.id}`, group.name);
-        }
+        this.rest.updateGroup(group)
+            .subscribe(() => this.getCategories());
     }
     
     updateProperty(property: Property){
-        if (property.id != null) {
-            let data = {
-                name: property.name,
-                propertyType: property.propType
-            }
-            this.http.put(`${categoryUrl}/property/${property.id}`, data);
-        }
+        this.rest.updateProperty(property)
+            .subscribe(() => this.getCategories());
     }
     
     deleteCategory(id: number) {
-        this.http.delete(`${categoryUrl}/${id}`);
+        this.rest.deleteCategory(id)
+            .subscribe(() => this.getCategories());
     }
     
-    deleteGroup(id: number) {
-        this.http.delete(`${categoryUrl}/group/${id}`);
+    deleteGroup(groupId: number) {
+        this.rest.deleteGroup(groupId)
+            .subscribe(() => this.getCategories());
     }
     
-    deleteProperty(id: number) {
-        this.http.delete(`${categoryUrl}/property/${id}`);
+    deleteProperty(propertyId: number) {
+        this.rest.deleteProperty(propertyId)
+            .subscribe(() => this.getCategories());
     }
 }
