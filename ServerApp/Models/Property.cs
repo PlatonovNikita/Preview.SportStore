@@ -1,4 +1,7 @@
-﻿namespace ServerApp.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace ServerApp.Models
 {
     public enum PropertyType
     {

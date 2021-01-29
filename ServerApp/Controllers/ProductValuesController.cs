@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -18,41 +19,27 @@ namespace ServerApp.Controllers
     public class ProductValuesController: Controller
     {
         private StoreContext context;
-        
-        public ProductValuesController(StoreContext _context)
-            => context = _context;
+
+        private IProductRepository repository;
+
+        public ProductValuesController(StoreContext _context, IProductRepository _repository)
+        {
+            context = _context;
+            repository = _repository;
+        }
 
         [HttpGet("{id}")]
-        public Product GetProduct(long id)
+        public IActionResult GetProduct(long id)
         {
-            var product = context.Products
-                .Include(p => p.Category)
-                .ThenInclude(c => c.GroupProperties)
-                .ThenInclude(gp => gp.Properties)
-                .Include(p => p.GroupsValues)
-                .ThenInclude(gv => gv.DoubleProps)
-                .Include(p => p.GroupsValues)
-                .ThenInclude(gv => gv.StrProps)
-                .Include(p => p.GroupsValues)
-                .ThenInclude(gv => gv.BoolProps)
-                .First(p => p.Id == id);
-            if (product.Category != null)
+            try
             {
-                product.Category.Products = null;
-                product.Category.GroupProperties = null;
+                Product product = repository.GetProduct(id);
+                return Ok(product);
             }
-            if (product.GroupsValues != null)
+            catch (ProductNotFound e)
             {
-                foreach (var groupValuese in product.GroupsValues)
-                {
-                    if (groupValuese.GroupProperty != null)
-                    {
-                        groupValuese.GroupProperty.Properties = null;
-                    }
-                }
+                return StatusCode(405, e.Message);
             }
-
-            return product;
         }
 
         [HttpPost]
@@ -60,45 +47,55 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (context.Categories
-                    .Any(c => c.Id == productData.CategoryId))
+                try
                 {
-                    var groupProperties = context.Set<GroupProperty>()
-                        .Where(gp => gp.CategoryId == productData.CategoryId);
-                    var groupVal = new List<GroupValues>();
-                    foreach (var gp in groupProperties)
-                    {
-                        groupVal.Add(new GroupValues {GroupPropertyId = gp.Id});
-                    }
-                    
-                    Product p = productData.Product;
-                    p.GroupsValues = groupVal;
-                    context.Add(p);
-                    context.SaveChanges();
-                    return Ok(p.Id);
+                    long productId = repository.AddProduct(productData.Product);
+                    return Ok(productId);
+                }
+                catch (CategoryNotFound e)
+                {
+                    return StatusCode(405, e.Message);
                 }
             }
-
             return BadRequest(ModelState);
         }
 
         [HttpPut("{id}")]
-        public IActionResult ReplaceProduct(long id, [FromBody] ProductData productData)
+        public IActionResult ReplaceProduct(long id, [FromBody] ProductDataBase productData)
         {
             if (ModelState.IsValid)
             {
-                var prod = context.Products.FirstOrDefault(p => p.Id == id);
-                if (prod == null) return Problem("This id is not valid");
-                
-                Product p = productData.Product;
-                prod.Name = p.Name;
-                prod.Description = p.Description;
-                prod.Price = p.Price;
-                prod.InStock = p.InStock;
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.ReplaceProduct(id, productData.Product);
+                    return Ok();
+                }
+                catch (ProductNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
+            return BadRequest(ModelState);
+        }
 
+        [HttpPut("description/{productId}")]
+        public IActionResult ReplaceDescription(long productId, [FromBody][Required][MaxLength(5000)] string value)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    repository.ReplaceDescription(productId, value);
+                }
+                catch (ProductNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
+                catch (DescriptionNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
+            }
             return BadRequest(ModelState);
         }
 
@@ -122,33 +119,24 @@ namespace ServerApp.Controllers
         }
 
         [HttpDelete("{id}")]
-        public void DeleteProduct(long id)
+        public IActionResult DeleteProduct(long id)
         {
-            context.Products.Remove(new Product {Id = id});
-            context.SaveChanges();
+            repository.DeleteProduct(id);
+            return Ok();
         }
 
         [HttpDelete("bycategory/{categoryId}")]
-        public void DeleteProducts(long categoryId)
+        public IActionResult DeleteProducts(long categoryId)
         {
-            var products = context.Products
-                .Where(p => p.CategoryId == categoryId);
-
-            if (products != null)
-            {
-                context.Products.RemoveRange(products);
-                context.SaveChanges();
-            }
-            
+            repository.DeleteProductsByCategory(categoryId);
+            return Ok();
         }
 
         [HttpDelete("bygroup/{groupId}")]
-        public void DeleteGroup(long groupId)
+        public IActionResult DeleteGroup(long groupId)
         {
-            var group = context.Set<GroupValues>()
-                .Where(gv => gv.GroupPropertyId == groupId);
-            context.RemoveRange(group);
-            context.SaveChanges();
+            repository.DeleteGroup(groupId);
+            return Ok();
         }
         
         [HttpGet]
@@ -156,13 +144,9 @@ namespace ServerApp.Controllers
             string search = null, long? categoryId = null, bool? inStock = null, 
             decimal? minPrice = null, decimal? maxPrice = null)
         {
-            IQueryable<Product> query = GetQuery(search, 
-                categoryId, inStock, minPrice, maxPrice);
-            
-            pageSize ??= 4;
-            pageNumber ??= 1;
-
-            return query.Skip((int)((pageNumber - 1) * pageSize)).Take((int)pageSize);
+            return repository.GetFilteredProducts(
+                pageSize, pageNumber, search, categoryId, 
+                inStock, minPrice, maxPrice);
         }
 
         [HttpPost("filter")]
@@ -171,90 +155,9 @@ namespace ServerApp.Controllers
             long? categoryId = null, bool? inStock = null, 
             decimal? minPrice = null, decimal? maxPrice = null)
         {
-            IQueryable<Product> query = GetQuery(search, 
-                categoryId, inStock, minPrice, maxPrice);
-
-            if (searchByProperty != null)
-            {
-                var doubleSearches = searchByProperty.DSearch;
-                if (doubleSearches != null)
-                {
-                    foreach (var dSearch in doubleSearches)
-                    {
-                        query = query.Where(p => p
-                            .GroupsValues
-                            .Any(gv => gv
-                                .DoubleProps
-                                .Any(i => i.PropertyId == dSearch.PropertyId
-                                          && (dSearch.Min == null || i.Value >= dSearch.Min)
-                                          && (dSearch.Max == null || i.Value <= dSearch.Max)
-                                )
-                            )
-                        );
-                    }
-                }
-
-                var boolSearches = searchByProperty.BSearch;
-                if (boolSearches != null)
-                {
-                    foreach (var bLine in boolSearches)
-                    {
-                        query = query.Where(p => p
-                            .GroupsValues
-                            .Any(gv => gv
-                                .BoolProps
-                                .Any(b => b.PropertyId == bLine.PropertyId
-                                          && (b.Value == bLine.Value)
-                                )
-                            )
-                        );
-                    }
-                }
-            }
-
-            pageSize ??= 4;
-            pageNumber ??= 1;
-
-            return query.Skip((int)((pageNumber - 1) * pageSize)).Take((int)pageSize);
-        }
-
-        [NonAction]
-        private IQueryable<Product> GetQuery(string search = null, 
-            long? categoryId = null, bool? inStock = null,
-            decimal? minPrice = null, decimal? maxPrice = null)
-        {
-            IQueryable<Product> query = context.Products;
-            if (inStock != null)
-            {
-                query = query.Where(p => p.InStock == inStock);
-            }
-
-            if (minPrice != null)
-            {
-                query = query.Where(p => p.Price >= minPrice);
-            }
-
-            if (maxPrice != null)
-            {
-                query = query.Where(p => p.Price <= maxPrice);
-            }
-
-            if (categoryId != null)
-            {
-                query = query.Where(p => p.CategoryId == categoryId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                string lowerSearch = search.ToLower();
-                query = query.Where(p => p.Name.ToLower().Contains(lowerSearch));
-                if (categoryId == null)
-                {
-                    query = query.Where(p => p.Category.Name.ToLower().Contains(lowerSearch));
-                }
-            }
-
-            return query;
+            return repository.GetFilteredProducts(
+                pageSize, pageNumber, search, categoryId, 
+                inStock, minPrice, maxPrice, searchByProperty);
         }
     }
 }

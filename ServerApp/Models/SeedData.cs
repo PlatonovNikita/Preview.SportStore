@@ -1,155 +1,101 @@
 ﻿using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using ServerApp.Models.BindingTargets;
 
 namespace ServerApp.Models
 {
     public class SeedData
     {
-        public static void EnsureCreated(StoreContext context)
+        public static void EnsureCreated(IProductRepository productEfRepository, 
+            ICategoryRepository categoryEfRepository)
         {
-            if (context.Products.Any()) return;
-            var c1 = new Category {
-                Name = "Treadmill",
-                NikName = "treadmill",
-                GroupProperties = new [] {
-                    new GroupProperty {
-                        Name = "specifications",
-                        Properties = new [] {
-                            new Property {
-                                Name = "Max Speed",
-                                PropType = PropertyType.Double
-                            },
-                            new Property {
-                                Name = "Weight",
-                                PropType = PropertyType.Double
-                            }, 
-                        }
-                    } 
-                }
-            };
-                
-            var c2 = new Category {
-                Name = "Exercise bike",
-                NikName = "ExerciseBike",
-                GroupProperties = new [] {
-                    new GroupProperty {
-                        Name = "specifications",
-                        Properties = new [] {
-                            new Property {
-                                Name = "Weight",
-                                PropType = PropertyType.Double
-                            },
-                            new Property {
-                                Name = "Features",
-                                PropType = PropertyType.Str
-                            }, 
-                        }
-                    }, 
-                }
-            };
-                
-            context.AddRange(c1, c2);
-            context.SaveChanges();
+            if (categoryEfRepository.GetFilteredCategories().Any()) return;
 
-            var groupC1 = c1.GroupProperties.First();
-                
-            var p1 = new Product {
-                Name = "Ultra Treadmill",
-                Description = "This is Ultra Treadmill",
+            long c1Id = categoryEfRepository.AddCategory(new Category {Name = "Беговые дорожки", NikName = "treadmill"});
+
+            long pg1Id = categoryEfRepository.AddPropertyGroup(new GroupProperty {Name = "Спицификации", CategoryId = c1Id});
+
+            long prop11Id = categoryEfRepository.AddProperty(new Property {Name = "Максимальная скорость", PropType = PropertyType.Double, GroupPropertyId = pg1Id});
+
+            long prop12Id = categoryEfRepository.AddProperty(new Property {Name = "Вес", PropType = PropertyType.Double, GroupPropertyId = pg1Id});
+
+            long p1Id = productEfRepository.AddProduct(new Product
+            {
+                Name = "Ультра беговая дорожка",
+                CategoryId = c1Id,
                 Price = 89.99m,
-                CategoryId = c1.Id,
-                GroupsValues = new [] {
-                    new GroupValues {
-                        GroupPropertyId = groupC1.Id,
-                        DoubleProps = new [] {
-                            new DoubleLine {
-                                Value = 15,
-                                PropertyId = groupC1.Properties.First(p => p.Name == "Max Speed").Id
-                            }, 
-                            new DoubleLine {
-                                Value = 40,
-                                PropertyId = groupC1.Properties.First(p => p.Name == "Weight").Id
-                            }, 
-                        }
-                    }, 
-                }
-            };
-                
-            var p2 = new Product {
-                Name = "Supper Treadmill",
-                Description = "This is Supper Treadmill",
-                Price = 189.99m,
-                CategoryId = c1.Id,
-                GroupsValues = new [] {
-                    new GroupValues {
-                        GroupPropertyId = groupC1.Id,
-                        DoubleProps = new [] {
-                            new DoubleLine {
-                                Value = 30,
-                                PropertyId = groupC1.Properties.First(p => p.Name == "Max Speed").Id
-                            }, 
-                            new DoubleLine {
-                                Value = 20,
-                                PropertyId = groupC1.Properties.First(p => p.Name == "Weight").Id
-                            }, 
-                        }
-                    }, 
-                }
-            };
+                Description = new Description("Это ультра беговая дорожка")
+            });
 
-            var groupC2 = c2.GroupProperties.First();
-                
-            var p3 = new Product {
-                Name = "Supper Exercise bike",
-                Description = "This is Supper Exercise bike",
-                Price = 99.99m,
-                CategoryId = c2.Id,
-                GroupsValues = new [] {
-                    new GroupValues {
-                        GroupPropertyId = groupC2.Id,
-                        DoubleProps = new [] {
-                            new DoubleLine {
-                                Value = 20,
-                                PropertyId = groupC2.Properties.First(p => p.Name == "Weight").Id
-                            },
-                        },
-                        StrProps = new [] {
-                            new StrLine {
-                                Value = "Supper",
-                                PropertyId = groupC2.Properties.First(p => p.Name == "Features").Id
-                            }, 
-                        }
-                    }, 
-                }
-            };
-                
-            var p4 = new Product {
-                Name = "Ultra Exercise bike",
-                Description = "This is Ultra Exercise bike",
+            productEfRepository.CreatePropertyDouble(new DoubleLineData
+                {Value = 15, ProductId = p1Id, PropertyId = prop11Id, GroupPropertyId = pg1Id});
+
+            productEfRepository.CreatePropertyDouble(new DoubleLineData
+                {Value = 40, ProductId = p1Id, PropertyId = prop12Id, GroupPropertyId = pg1Id});
+
+            long p2Id = productEfRepository.AddProduct(new Product
+            {
+                Name = "Супер беговая дорожка",
+                CategoryId = c1Id,
+                Price = 189.99m,
+                Description = new Description("Это супер беговая дорожка")
+            });
+
+            productEfRepository.CreatePropertyDouble(new DoubleLineData
+                {Value = 30, ProductId = p2Id, PropertyId = prop11Id, GroupPropertyId = pg1Id});
+
+            productEfRepository.CreatePropertyDouble(new DoubleLineData
+                {Value = 20, ProductId = p2Id, PropertyId = prop12Id, GroupPropertyId = pg1Id});
+            
+            
+            
+            long c2Id = categoryEfRepository.AddCategory(new Category {Name = "Велотренажёр", NikName = "ExerciseBike"});
+            
+            long gp2Id = categoryEfRepository.AddPropertyGroup(new GroupProperty {Name = "Спицификации", CategoryId = c2Id});
+
+            long prop21Id = categoryEfRepository.AddProperty(new Property
+                {Name = "Вес", PropType = PropertyType.Double, GroupPropertyId = gp2Id});
+
+            long prop22Id = categoryEfRepository.AddProperty(new Property
+                {Name = "Особенности", PropType = PropertyType.Str, GroupPropertyId = gp2Id});
+
+            long prop23Id = categoryEfRepository.AddProperty(new Property
+                {Name = "Мультифункциональный?", PropType = PropertyType.Bool, GroupPropertyId = gp2Id});
+
+            long p3Id = productEfRepository.AddProduct(new Product
+            {
+               Name = "Супер велотренажёр",
+               Description = new Description("Это cупер велотренажёр"),
+               Price = 99.99m,
+               CategoryId = c2Id
+            });
+
+            productEfRepository.CreatePropertyDouble(new DoubleLineData
+                {Value = 20, ProductId = p3Id, GroupPropertyId = gp2Id, PropertyId = prop21Id});
+
+            productEfRepository.CreatePropertyStr(new StrLineData
+                {Value = "Складной", ProductId = p3Id, GroupPropertyId = gp2Id, PropertyId = prop22Id});
+
+            productEfRepository.CreatePropertyBool(new BoolLineData
+                {Value = true, ProductId = p3Id, GroupPropertyId = gp2Id, PropertyId = prop23Id});
+            
+            long p4Id = productEfRepository.AddProduct(new Product
+            {
+                Name = "Ультра велотренажёр",
+                Description = new Description("Это ультра велотренажёр"),
                 Price = 49.99m,
-                CategoryId = c2.Id,
-                GroupsValues = new [] {
-                    new GroupValues {
-                        GroupPropertyId = groupC2.Id,
-                        DoubleProps = new [] {
-                            new DoubleLine {
-                                Value = 27,
-                                PropertyId = groupC2.Properties.First(p => p.Name == "Weight").Id
-                            },
-                        },
-                        StrProps = new [] {
-                            new StrLine {
-                                Value = "Ultra",
-                                PropertyId = groupC2.Properties.First(p => p.Name == "Features").Id
-                            }, 
-                        }
-                    }, 
-                }
-            };
-                
-            context.AddRange(p1, p2, p3, p4);
-            context.SaveChanges();
+                CategoryId = c2Id
+            });
+
+            productEfRepository.CreatePropertyDouble(new DoubleLineData
+                {Value = 27, ProductId = p4Id, GroupPropertyId = gp2Id, PropertyId = prop21Id});
+
+            productEfRepository.CreatePropertyStr(new StrLineData
+                {Value = "Раскладной", ProductId = p4Id, GroupPropertyId = gp2Id, PropertyId = prop22Id});
+            
+            productEfRepository.CreatePropertyBool(new BoolLineData
+                {Value = false, ProductId = p4Id, GroupPropertyId = gp2Id, PropertyId = prop23Id});
         }
     }
 }

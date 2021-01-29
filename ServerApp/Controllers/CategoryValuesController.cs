@@ -16,24 +16,32 @@ namespace ServerApp.Controllers
     {
         private StoreContext context;
 
-        public CategoryValuesController(StoreContext _context)
-            => context = _context;
+        private ICategoryRepository repository;
+
+        public CategoryValuesController(StoreContext _context, ICategoryRepository _repository)
+        {
+            context = _context;
+            repository = _repository;
+        }
 
         [HttpGet("{id}")]
-        public Category GetCategory(long id)
+        public IActionResult GetCategory(long id)
         {
-            return context.Categories
-                .Include(c => c.GroupProperties)
-                .ThenInclude(gp => gp.Properties)
-                .FirstOrDefault(c => c.Id == id);
+            try
+            {
+                var category = repository.GetCategory(id);
+                return Ok(category);
+            }
+            catch (CategoryNotFound e)
+            {
+                return StatusCode(405, e.Message);
+            }
         }
 
         [HttpGet]
-        public IEnumerable<Category> GetCategories()
+        public IEnumerable<Category> GetCategories(string search = null)
         {
-            return context.Categories
-                .Include(c => c.GroupProperties)
-                .ThenInclude(gp => gp.Properties);
+            return repository.GetFilteredCategories(search);
         }
 
         [HttpPost]
@@ -41,12 +49,9 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                Category cat = catData.Category;
-                context.Categories.Add(cat);
-                context.SaveChanges();
-                return Ok(cat.Id);
+                var categoryId = repository.AddCategory(catData.Category);
+                return Ok(categoryId);
             }
-
             return BadRequest(ModelState);
         }
 
@@ -56,16 +61,16 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                Category cat = context.Categories
-                    .FirstOrDefault(c => c.Id == id);
-                if (cat == null) return Problem("This id is not valid");
-
-                cat.Name = catData.Name;
-                cat.NikName = catData.NikName;
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.UpdateCategory(id, catData.Category);
+                    return Ok();
+                }
+                catch (CategoryNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
-
             return BadRequest(ModelState);
         }
 
@@ -74,33 +79,34 @@ namespace ServerApp.Controllers
         {
             try
             {
-                context.Categories.Remove(new Category {Id = id});
-                context.SaveChanges();
+                repository.DeleteCategory(id);
                 return Ok();
             }
-            catch (DbUpdateException e)
+            catch (DbUpdateException)
             {
-                return BadRequest("There are product that dependencies from this category!");
+                return StatusCode(405,"There are products that dependencies from this category!");
             }
-            
         }
         
         [HttpPost("group")]
-        public IActionResult CreatePropertieGroup([FromBody] GroupPropertiesData gpData)
+        public IActionResult CreatePropertyGroup([FromBody] GroupPropertiesData gpData)
         {
             if (ModelState.IsValid)
             {
-                if (context.Categories.Any(c => c.Id == gpData.CategoryId))
+                try
                 {
-                    var groupProps = gpData.GroupProperty;
-                    context.Add(groupProps);
-                    context.SaveChanges();
-                    return Ok(groupProps.Id);
+                    var propertyGroupId = repository.AddPropertyGroup(gpData.GroupProperty);
+                    return Ok(propertyGroupId);
                 }
-
-                return Problem("Category id is not valid");
+                catch (CategoryNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
+                catch (UnacceptableNameGroup e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
-
             return BadRequest(ModelState);
         }
 
@@ -109,15 +115,16 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                GroupProperty groupProp = context.Set<GroupProperty>()
-                    .FirstOrDefault(gp => gp.Id == id);
-                if (groupProp == null) return Problem("This id is nod valid");
-
-                groupProp.Name = name;
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.UpdateGroup(id, new GroupProperty {Name = name});
+                    return Ok();
+                }
+                catch (GroupCategoryNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
-
             return BadRequest(ModelState);
         }
 
@@ -126,12 +133,10 @@ namespace ServerApp.Controllers
         {
             try
             {
-                context.Set<GroupProperty>()
-                    .Remove(new GroupProperty {Id = id});
-                context.SaveChanges();
+                repository.DeleteGroup(id);
                 return Ok();
             }
-            catch (DbUpdateException e)
+            catch (DbUpdateException)
             {
                 return BadRequest("There are products that contains group " +
                                   "values dependencies from this group!");
@@ -143,18 +148,16 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (context.Set<GroupProperty>()
-                    .Any(gp => gp.Id == propData.GroupPropertyId))
+                try
                 {
-                    var property = propData.Property;
-                    context.Add(property);
-                    context.SaveChanges();
-                    return Ok(property.Id);
+                    var propertyId = repository.AddProperty(propData.Property);
+                    return Ok(propertyId);
                 }
-
-                return Problem("Group id is not valid");
+                catch (GroupCategoryNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
-
             return BadRequest(ModelState);
         }
 
@@ -163,14 +166,15 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                Property prop = context.Set<Property>()
-                    .FirstOrDefault(p => p.Id == id);
-                if (prop == null) return Problem("This id is not valid");
-
-                prop.Name = propData.Name;
-                prop.PropType = (PropertyType) propData.PropertyType;
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.UpdateProperty(id, propData.Property);
+                    return Ok();
+                }
+                catch (PropertyNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
 
             return BadRequest(ModelState);
@@ -181,15 +185,26 @@ namespace ServerApp.Controllers
         {
             try
             {
-                context.Set<Property>()
-                    .Remove(new Property {Id = id});
-                context.SaveChanges();
+                repository.DeleteProperty(id);
                 return Ok();
             }
-            catch (DbUpdateException e)
+            catch (DbUpdateException)
             {
                 return BadRequest("There are products that contains property " +
                                   "value dependencies from this property!");
+            }
+        }
+
+        [HttpGet("uniquestrings/{propertyId}")]
+        public IActionResult GetUniqueStrings(long propertyId)
+        {
+            try
+            {
+                return Ok(repository.GetUniqueStrings(propertyId));
+            }
+            catch (CategoryNotFound e)
+            {
+                return StatusCode(405, e.Message);
             }
         }
     }

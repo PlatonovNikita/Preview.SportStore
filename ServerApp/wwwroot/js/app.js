@@ -373,7 +373,7 @@ function appReady() {
     }
 //=================
 //Spollers
-    let spollers = document.querySelectorAll("._spoller");
+    /*let spollers = document.querySelectorAll("._spoller");
     if (spollers.length > 0) {
         for (let index = 0; index < spollers.length; index++) {
             const spoller = spollers[index];
@@ -398,7 +398,7 @@ function appReady() {
                 _slideToggle(spoller.nextElementSibling);
             });
         }
-    }
+    }*/
 //=================
 //Gallery
     let gallery = document.querySelectorAll('._gallery');

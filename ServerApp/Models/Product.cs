@@ -7,9 +7,9 @@ namespace ServerApp.Models
     {
         public long Id { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public Description Description { get; set; }
         public decimal Price { get; set; }
-        public bool InStock { get; set; } = true;
+        public bool? InStock { get; set; } = true;
         
         public long? CategoryId { get; set; }
         public Category Category { get; set; }

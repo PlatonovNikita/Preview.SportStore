@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using ServerApp.Models;
@@ -12,44 +13,41 @@ namespace ServerApp.Controllers
     {
         private StoreContext context;
 
-        public PropertyValueController(StoreContext _context)
-            => context = _context;
-        
+        private IProductRepository repository;
+
+        public PropertyValueController(StoreContext _context, IProductRepository _repository)
+        {
+            context = _context;
+            repository = _repository;
+        }
+
         [HttpPost("dproperty")]
-        public IActionResult CreatePropertyInt([FromBody] DoubleLineData doubleData)
+        public IActionResult CreatePropertyDouble([FromBody] DoubleLineData doubleData)
         {
             if (ModelState.IsValid)
             {
-                var check = CheckValidProperty(doubleData);
-                if (check != null) return check;
+                CheckValidProperty(doubleData);
 
-                var groupValuesId = context.Set<GroupValues>()
-                    .First(gv => gv.GroupPropertyId == doubleData.GroupPropertyId
-                                 && gv.ProductId == doubleData.ProductId)
-                    .Id;
-                var intProp = doubleData.DoubleLine;
-                intProp.GroupValuesId = groupValuesId;
-                context.Add(intProp);
-                context.SaveChanges();
-                return Ok(intProp.Id);
+                long propertyId = repository.CreatePropertyDouble(doubleData);
+                return Ok(propertyId);
             }
-
             return BadRequest(ModelState);
         }
         
         [HttpPut("dproperty/{id}")]
-        public IActionResult ReplacePropertyInt(long id, [FromBody][Required] double value)
+        public IActionResult ReplacePropertyDouble(long id, [FromBody][Required] double value)
         {
             if (ModelState.IsValid)
             {
-                var intProp = context.Set<DoubleLine>()
-                    .FirstOrDefault(i => i.Id == id);
-                if (intProp == null) return Problem("Id is not valid");
-                
-                intProp.Value = value;
-                context.Update(intProp);
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.ReplacePropertyDouble(id, value);
+                    return Ok();
+                }
+                catch (RelatedPropertyNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
 
             return BadRequest(ModelState);
@@ -60,20 +58,11 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var check = CheckValidProperty(boolData);
-                if (check != null) return check;
-                
-                var groupValuesId = context.Set<GroupValues>()
-                    .First(gv => gv.GroupPropertyId == boolData.GroupPropertyId 
-                                 && gv.ProductId == boolData.ProductId)
-                    .Id;
-                var boolProp = boolData.BoolLine;
-                boolProp.GroupValuesId = groupValuesId;
-                context.Add(boolProp);
-                context.SaveChanges();
-                return Ok(boolProp.Id);
-            }
+                CheckValidProperty(boolData);
 
+                long propertyId = repository.CreatePropertyBool(boolData);
+                return Ok(propertyId);
+            }
             return BadRequest(ModelState);
         }
         
@@ -82,16 +71,16 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var boolProp = context.Set<BoolLine>()
-                    .FirstOrDefault(i => i.Id == id);
-                if (boolProp == null) return Problem("Id is not valid");
-                
-                boolProp.Value = value;
-                context.Update(boolProp);
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.ReplacePropertyBool(id, value);
+                    return Ok();
+                }
+                catch (RelatedPropertyNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
-
             return BadRequest(ModelState);
         }
         
@@ -100,20 +89,11 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var check = CheckValidProperty(strData);
-                if (check != null) return check;
-                
-                var groupValuesId = context.Set<GroupValues>()
-                    .First(gv => gv.GroupPropertyId == strData.GroupPropertyId 
-                                 && gv.ProductId == strData.ProductId)
-                    .Id;
-                var strProp = strData.StrLine;
-                strProp.GroupValuesId = groupValuesId;
-                context.Add(strProp);
-                context.SaveChanges();
-                return Ok(strProp.Id);
-            }
+                CheckValidProperty(strData);
 
+                long propertyId = repository.CreatePropertyStr(strData);
+                return Ok(propertyId);
+            }
             return BadRequest(ModelState);
         }
         
@@ -122,55 +102,45 @@ namespace ServerApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var strProp = context.Set<StrLine>()
-                    .FirstOrDefault(i => i.Id == id);
-                if (strProp == null) return Problem("Id is not valid");
-                
-                strProp.Value = value;
-                context.Update(strProp);
-                context.SaveChanges();
-                return Ok();
+                try
+                {
+                    repository.ReplacePropertyStr(id, value);
+                    return Ok();
+                }
+                catch (RelatedPropertyNotFound e)
+                {
+                    return StatusCode(405, e.Message);
+                }
             }
-
             return BadRequest(ModelState);
         }
 
         [HttpDelete("byproperty/{propertyId}")]
-        public void DeleteProperty(long propertyId)
+        public IActionResult DeleteProperty(long propertyId)
         {
-            var dl = context.Set<DoubleLine>().
-                Where(d => d.PropertyId == propertyId);
-            var bl = context.Set<BoolLine>()
-                .Where(b => b.PropertyId == propertyId);
-            var sl = context.Set<StrLine>()
-                .Where(s => s.PropertyId == propertyId);
-            
-            context.RemoveRange(bl);
-            context.RemoveRange(dl);
-            context.RemoveRange(sl);
-            context.SaveChanges();
+            repository.DeleteProperty(propertyId);
+            return Ok();
         }
 
         [NonAction]
         public IActionResult CheckValidProperty(BaseLineData data)
         {
-            if (!context.Set<GroupProperty>()
-                .Any(gv => gv.Id == data.GroupPropertyId))
+            try
             {
-                return Problem("Group id is not valid");
+                repository.CheckValidProperty(data);
             }
-
-            if (!context.Products.Any(p => p.Id == data.ProductId))
+            catch (RelatedGroupNotFound e)
             {
-                return Problem("Product id is not valid");
+                return StatusCode(405, e.Message);
             }
-                
-            if (!context.Set<Property>()
-                .Any(p => p.Id == data.PropertyId))
+            catch (ProductNotFound e)
             {
-                return Problem("Property id is not valid");
+                return StatusCode(405, e.Message);
             }
-
+            catch (RelatedPropertyNotFound e)
+            {
+                return StatusCode(405, e.Message);
+            }
             return null;
         }
     }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ServerApp.Models;
 
 namespace ServerApp.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20201226090059_Description")]
+    partial class Description
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,7 +162,7 @@ namespace ServerApp.Migrations
                     b.Property<long?>("CategoryId")
                         .HasColumnType("bigint");
 
-                    b.Property<bool?>("InStock")
+                    b.Property<bool>("InStock")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -222,24 +224,6 @@ namespace ServerApp.Migrations
                     b.HasIndex("PropertyId");
 
                     b.ToTable("StrLine");
-                });
-
-            modelBuilder.Entity("ServerApp.Models.UniqueString", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long>("PropertyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UniqueStrings");
                 });
 
             modelBuilder.Entity("ServerApp.Models.BoolLine", b =>

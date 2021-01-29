@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using ServerApp.Controllers;
 using ServerApp.Models;
 
 namespace ServerApp
@@ -47,9 +48,14 @@ namespace ServerApp
             {
                 builder.UseSqlServer(Configuration["ConnectionString:DefaultConnect"]);
             });
+
+            services.AddTransient<IProductRepository, ProductEfRepository>();
+
+            services.AddTransient<ICategoryRepository, CategoryEfRepository>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, StoreContext context)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, 
+            IProductRepository productEfRepository, ICategoryRepository categoryEfRepository)
         {
             if (env.IsDevelopment())
             {
@@ -82,7 +88,7 @@ namespace ServerApp
                 spa.UseProxyToSpaDevelopmentServer("http://localhost:4200/");
             });
             
-            SeedData.EnsureCreated(context);
+            SeedData.EnsureCreated(productEfRepository, categoryEfRepository);
         }
     }
 }
