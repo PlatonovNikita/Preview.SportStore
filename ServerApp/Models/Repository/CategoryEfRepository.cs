@@ -20,6 +20,13 @@ namespace ServerApp.Models
                    ?? throw new CategoryNotFound("This id is not valid");
         }
 
+        public Category GetCategoryByNickName(string nickName)
+        {
+            return context.Categories
+                .FirstOrDefault(cat => cat.NikName == nickName)
+                    ?? throw new CategoryNotFound("Category with this nickname not found");
+        }
+
         public long AddCategory(Category category)
         {
             context.Categories.Add(category);
@@ -108,9 +115,18 @@ namespace ServerApp.Models
 
         public long AddProperty(Property property)
         {
-            if (context.Set<GroupProperty>()
-                .Any(gp => gp.Id == property.GroupPropertyId))
+            var groupProperty = context.Set<GroupProperty>()
+                .FirstOrDefault(gp => gp.Id == property.GroupPropertyId);
+            if (groupProperty != null)
             {
+                if (groupProperty.Name == "_global")
+                {
+                    if (context.Set<Property>()
+                        .Count(prop => prop.GroupPropertyId == property.GroupPropertyId) >= 6)
+                    {
+                        throw new ExcessGlobalGroupProperties("Exceeded the number of global group properties!");
+                    }
+                }
                 context.Add(property);
                 context.SaveChanges();
                 return property.Id;

@@ -41,7 +41,29 @@ namespace ServerApp.Controllers
                 return StatusCode(405, e.Message);
             }
         }
-
+        
+        [HttpPost("pagesCount")]
+        public IActionResult GetPagesCount([FromBody] SearchLines searchByProperty, 
+            int? pageSize = null,  string search = null, 
+            long? categoryId = null, bool? inStock = null, 
+            decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            return Ok(repository.GetPagesCount(
+                pageSize, search, categoryId,
+                inStock, minPrice, maxPrice, searchByProperty));
+        }
+        
+        [HttpGet("pagesCount")]
+        public IActionResult GetPagesCount( 
+            int? pageSize = null,  string search = null, 
+            long? categoryId = null, bool? inStock = null, 
+            decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            return Ok(repository.GetPagesCount(
+                pageSize, search, categoryId,
+                inStock, minPrice, maxPrice, null));
+        }
+        
         [HttpPost]
         public IActionResult CreateProduct([FromBody] ProductData productData)
         {

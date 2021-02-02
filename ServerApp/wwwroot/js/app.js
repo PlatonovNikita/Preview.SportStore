@@ -1085,11 +1085,11 @@ function appReady() {
 
 
 //Select
-    let selects = document.getElementsByTagName('select');
+    /*let selects = document.getElementsByTagName('select');
     if (selects.length > 0) {
         selects_init();
-    }
-    function selects_init() {
+    }*/
+    /*function selects_init() {
         for (let index = 0; index < selects.length; index++) {
             const select = selects[index];
             select_init(select);
@@ -1103,8 +1103,8 @@ function appReady() {
                 selects_close(e);
             }
         });
-    }
-    function selects_close(e) {
+    }*/
+    /*function selects_close(e) {
         const selects = document.querySelectorAll('.select');
         if (!e.target.closest('.select')) {
             for (let index = 0; index < selects.length; index++) {
@@ -1114,8 +1114,8 @@ function appReady() {
                 _slideUp(select_body_options, 100);
             }
         }
-    }
-    function select_init(select) {
+    }*/
+    /*function select_init(select) {
         const select_parent = select.parentElement;
         const select_modifikator = select.getAttribute('class');
         const select_selected_option = select.querySelector('option:checked');
@@ -1127,8 +1127,8 @@ function appReady() {
         let new_select = select.parentElement.querySelector('.select');
         new_select.appendChild(select);
         select_item(select);
-    }
-    function select_item(select) {
+    }*/
+    /*function select_item(select) {
         const select_parent = select.parentElement;
         const select_items = select_parent.querySelector('.select__item');
         const select_options = select.querySelectorAll('option');
@@ -1156,6 +1156,7 @@ function appReady() {
         select_actions(select, select_parent);
     }
     function select_actions(original, select) {
+        const select_form = select.querySelector('.select-form');
         const select_item = select.querySelector('.select__item');
         const select_body_options = select.querySelector('.select__options');
         const select_options = select.querySelectorAll('.select__option');
@@ -1242,7 +1243,7 @@ function appReady() {
             }
         }
     }
-
+*/
 //Placeholers
     let inputs = document.querySelectorAll('input[data-value],textarea[data-value]');
     inputs_init(inputs);

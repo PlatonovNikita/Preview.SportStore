@@ -14,6 +14,10 @@ namespace ServerApp.Models
         void DeleteProduct(long id);
         
         Product GetProduct(long id);
+
+        int GetPagesCount(int? pageSize = null, string search = null,
+            long? categoryId = null, bool? inStock = null,
+            decimal? minPrice = null, decimal? maxPrice = null, SearchLines searchByProperty = null);
         
         IEnumerable<Product> GetFilteredProducts( 
             int? pageSize = null, int? pageNumber = null, string search = null, 

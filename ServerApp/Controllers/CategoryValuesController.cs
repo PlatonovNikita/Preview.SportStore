@@ -38,6 +38,21 @@ namespace ServerApp.Controllers
             }
         }
 
+        [HttpGet("byNick/{nickName}")]
+        public IActionResult GetCategoryByNickName(string nickName)
+        {
+            try
+            {
+                var category = repository.GetCategoryByNickName(nickName);
+                return Ok(category);
+            }
+            catch (CategoryNotFound e)
+            {
+                return StatusCode(405, e.Message);
+            }
+        }
+        
+
         [HttpGet]
         public IEnumerable<Category> GetCategories(string search = null)
         {
@@ -54,7 +69,6 @@ namespace ServerApp.Controllers
             }
             return BadRequest(ModelState);
         }
-
 
         [HttpPut("{id}")]
         public IActionResult ReplaceCategory(long id, [FromBody][Required] CategoryData catData)
@@ -156,6 +170,10 @@ namespace ServerApp.Controllers
                 catch (GroupCategoryNotFound e)
                 {
                     return StatusCode(405, e.Message);
+                }
+                catch (ExcessGlobalGroupProperties e)
+                {
+                    return StatusCode(406, e.Message);
                 }
             }
             return BadRequest(ModelState);

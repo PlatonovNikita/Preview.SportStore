@@ -52,7 +52,31 @@ namespace ServerApp.Models
 
             return product;
         }
-        
+
+        public int GetPagesCount(int? pageSize = null, string search = null, long? categoryId = null, bool? inStock = null,
+            decimal? minPrice = null, decimal? maxPrice = null, SearchLines searchByProperty = null)
+        {
+            IQueryable<Product> query = GetQuery(search, 
+                categoryId, inStock, minPrice, maxPrice);
+
+            query = SetQueryByProperty(searchByProperty, query);
+
+            int productsCount = query.Count();
+
+            pageSize ??= 9;
+            
+            int pagesCount = productsCount / pageSize.Value;
+            
+            if (productsCount % pageSize.Value == 0)
+            {
+                return pagesCount;
+            }
+            else
+            {
+                return pagesCount + 1;
+            }
+        }
+
         public long AddProduct(Product product)
         {
             if (context.Categories
@@ -133,6 +157,34 @@ namespace ServerApp.Models
             IQueryable<Product> query = GetQuery(search, 
                 categoryId, inStock, minPrice, maxPrice);
 
+            query = SetQueryByProperty(searchByProperty, query);
+
+            pageSize ??= 9;
+            pageNumber ??= 1;
+
+            IEnumerable<Product> queryResult = query
+                .Skip((int)((pageNumber - 1) * pageSize))
+                .Take((int)pageSize).ToArray();
+            
+            foreach (var product in queryResult)
+            {
+                context.Set<GroupValues>()
+                    .Where(gv => gv.ProductId == product.Id 
+                                 && gv.GroupProperty.Name == "_global")
+                    .Include(gv => gv.BoolProps)
+                    .ThenInclude(bp => bp.Property)
+                    .Include(gv => gv.DoubleProps)
+                    .ThenInclude(dp => dp.Property)
+                    .Include(gv => gv.StrProps)
+                    .ThenInclude(sp => sp.Property)
+                    .Load();
+            }
+            
+            return queryResult;
+        }
+
+        private static IQueryable<Product> SetQueryByProperty(SearchLines searchByProperty, IQueryable<Product> query)
+        {
             if (searchByProperty != null)
             {
                 var doubleSearches = searchByProperty.DSearch;
@@ -185,10 +237,7 @@ namespace ServerApp.Models
                 }
             }
 
-            pageSize ??= 4;
-            pageNumber ??= 1;
-
-            return query.Skip((int)((pageNumber - 1) * pageSize)).Take((int)pageSize);
+            return query;
         }
 
         private IQueryable<Product> GetQuery(string search = null, 

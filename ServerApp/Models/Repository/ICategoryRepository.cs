@@ -6,6 +6,8 @@ namespace ServerApp.Models
     public interface ICategoryRepository
     {
         Category GetCategory(long id);
+
+        Category GetCategoryByNickName(string nickName);
         
         long AddCategory(Category category);
         
@@ -51,6 +53,12 @@ namespace ServerApp.Models
     public class UnacceptableNameGroup : ArgumentException
     {
         public UnacceptableNameGroup(string message)
+            : base(message) { }
+    }
+
+    public class ExcessGlobalGroupProperties : ArgumentException
+    {
+        public ExcessGlobalGroupProperties(string message)
             : base(message) { }
     }
 }
