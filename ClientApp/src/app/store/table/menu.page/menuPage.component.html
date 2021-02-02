@@ -12,11 +12,10 @@
     <div class="menu-page__body">
         <ul class="menu-page__list"
                 *ngFor="let category of categories">
-            <li><a href="#" class="menu-page__link"
-                    [routerLink]="['/table', category.nikName]"
-                    (click)="setFilterByCategory(category.id)">
+            <li><span class="menu-page__link"
+                   (click)="setFilterByCategory(category)" >
                 {{category.name}}
-            </a></li>
+            </span></li>
         </ul>
     </div>
 </nav>

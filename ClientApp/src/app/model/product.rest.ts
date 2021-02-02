@@ -20,6 +20,32 @@ export class ProductRest {
         return this.http.get<Product>(`${this.productsUrl}/${id}`);
     }
     
+    getPagesCount(filter: Filter): Observable<number> {
+        let url = this.productsUrl;
+        
+        url += `/pagesCount?`;
+
+        if (filter?.pageSize) url += `pageSize=${filter.pageSize}&`;
+
+        if (filter?.search) url += `search=${filter.search}&`;
+
+        if (filter?.categoryId) url += `categoryId=${filter.categoryId}&`;
+
+        if (filter?.inStock) url += `inStock=${filter.inStock}&`;
+
+        if (filter?.minPrice) url += `minPrice=${filter.minPrice}&`;
+
+        if (filter?.maxPrice) url += `maxPrice=${filter.maxPrice}&`;
+        
+        if (filter?.searchLines){
+            return this.http.post<number>(url, filter.searchLines);
+        }
+        else {
+            return this.http.get<number>(url);
+        }
+        
+    }
+    
     getProducts(filter: Filter): Observable<Product[]>{
         let url = this.productsUrl;
 

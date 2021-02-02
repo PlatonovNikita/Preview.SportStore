@@ -1,8 +1,7 @@
 ﻿import {Directive, HostBinding, HostListener, Inject, Input} from "@angular/core";
 import {Observable, Observer} from "rxjs";
 import {PriceFilterState} from "./price.filter.state";
-import {CLEAR_EMITTER} from "../../../store.module";
-
+import {CLEAR_EMITTER} from "../filter.component";
 @Directive({
     selector: "[sp-price-filter]"
 })

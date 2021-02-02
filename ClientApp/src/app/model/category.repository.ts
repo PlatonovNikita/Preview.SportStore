@@ -5,6 +5,7 @@ import {inject, Injectable} from "@angular/core";
 import {CATEGORY_URL, CategoryRest} from "./category.rest";
 import {MessageService} from "./message/message.service";
 import {ProductRest} from "./product.rest";
+import {BehaviorSubject, Subject} from "rxjs";
 
 const categoryUrl = "/api/categories";
 
@@ -14,15 +15,19 @@ export class CategoryRepository {
     categories: Category[] = [];
     category: Category = new Category();
     search: string;
+    newCategory: Subject<void> = new Subject<void>();
 
     constructor(private rest: CategoryRest,
-                private productRest: ProductRest) { 
+                private productRest: ProductRest) {
         this.getCategories();
     }
 
     getCategory(id: number) {
         this.rest.getCategory(id)
-            .subscribe(c => this.category = c);
+            .subscribe(c => {
+                this.category = c;
+                this.newCategory.next()
+            });
     }
 
     getCategories(){

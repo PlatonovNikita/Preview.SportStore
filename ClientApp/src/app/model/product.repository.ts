@@ -6,15 +6,16 @@ import {DoubleLine} from "./product/doubleLine.model";
 import {StrLine} from "./product/strLine.model";
 import {Filter} from "./product/configClasses.repository";
 import {ProductRest} from "./product.rest";
+import {BehaviorSubject, Subject} from "rxjs";
 
 @Injectable()
 export class ProductRepository {
     product: Product = new Product();
     products: Product[] = [];
     productId?: number;
+    newProducts: Subject<void> = new Subject<void>();
 
     constructor(private rest: ProductRest, private filter: Filter) {
-        this.getProducts();
     }
 
     getProduct(id: number) {
@@ -26,7 +27,10 @@ export class ProductRepository {
     getProducts() {
         console.log(this.filter);
         this.rest.getProducts(this.filter)
-            .subscribe(p => this.products = p);
+            .subscribe(p => {
+                this.products = p;
+                this.newProducts.next();
+            });
     }
     
     createProduct(product: Product){

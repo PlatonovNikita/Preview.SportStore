@@ -3639,10 +3639,9 @@ body.ie ._ibg img {
 
 .hover-item-product__cart {
   background: url("../img/icons/cart_orange.png") 0 0 no-repeat;
-  width: 57px;
-  height: 57px;
-  margin: 0px auto 25px auto;
-  display: block;
+  background-size: 100%;
+  width: 40px;
+  height: 40px;
 }
 
 .hover-item-product__cart_catalog {
@@ -3857,7 +3856,7 @@ body.ie ._ibg img {
   margin: 0px 0px 0px 0px;
 }
 
-.categories-search__checkbox .checkbox__input:checked + .checkbox__text {
+.categories-search__checkbox :checked + .checkbox__text {
   color: #f68038;
 }
 

@@ -1,7 +1,7 @@
 ﻿import {Directive, HostBinding, HostListener, Inject, Input} from "@angular/core";
 import {Observable, Observer} from "rxjs";
 import {Operation, StrFilterState} from "./str.filter.state";
-import {CLEAR_EMITTER} from "../../../store.module";
+import {CLEAR_EMITTER} from "../filter.component";
 
 @Directive({
     selector: "[sp-str-filter]"

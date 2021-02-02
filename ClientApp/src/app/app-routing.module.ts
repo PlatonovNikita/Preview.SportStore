@@ -5,7 +5,7 @@ import {TableComponent} from "./store/table/table.component";
 const routes: Routes = [
     {path: "table", component: TableComponent},
     {path: "table/:category", component: TableComponent},
-    {path: "", redirectTo: "/table", pathMatch: "full"}
+    {path: "", redirectTo: "/table/ExerciseBike", pathMatch: "full"}
 ];
 
 @NgModule({

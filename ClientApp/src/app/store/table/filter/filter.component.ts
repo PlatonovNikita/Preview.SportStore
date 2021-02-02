@@ -1,5 +1,5 @@
 ﻿import {BoolLineSearch} from "../../../model/ViewModel/boolLineSearch.model";
-import {Component, Inject} from "@angular/core";
+import {Component, Inject, InjectionToken} from "@angular/core";
 import {Observable, Observer, Subject} from "rxjs";
 import {CategoryRest} from 'src/app/model/category.rest';
 import {Category, CATEGORY_ID} from 'src/app/model/category/category.model';
@@ -14,8 +14,12 @@ import {Property, PropertyType} from "../../../model/category/property.model";
 import {StrLineSearch} from "../../../model/ViewModel/strLineStarch";
 import {DoubleLineSearch} from "../../../model/ViewModel/doubleLineSearch.model";
 import {Filter} from "../../../model/product/configClasses.repository";
-import {CLEAR_EMITTER} from "../../store.module";
 import {SectionTrigger} from "../animations/table.animations";
+import {CategoryRepository} from "../../../model/category.repository";
+
+export const CLEAR_EMITTER = new InjectionToken("clear_emitter");
+
+export const SUBMIT_EMITTER = new InjectionToken("submit_emitter");
 
 @Component({
     selector: "spFilter",
@@ -34,34 +38,22 @@ export class FilterComponent {
     
     constructor(private rest: CategoryRest, private productModel: ProductRepository,
                 private filter: Filter,
-                @Inject(CATEGORY_ID) private id: Observable<number>,
-                @Inject(CLEAR_EMITTER) public clearEmitter: Subject<void>) {
-        id.subscribe(catId => rest.getCategory(catId)
-            .subscribe(cat => {
-                for (let gp of cat.groupProperties){
-                    for (let prop of gp.properties){
-                        if (prop.propType == PropertyType.Str){
+                categories: CategoryRepository,
+                @Inject(CLEAR_EMITTER) public clearEmitter: Subject<void>,
+                @Inject(SUBMIT_EMITTER) private submitEmitter: Subject<void>) {
+        categories.newCategory
+            .subscribe(() => {
+                for (let gp of categories.category.groupProperties) {
+                    for (let prop of gp.properties) {
+                        if (prop.propType == PropertyType.Str) {
                             this.rest.getUniqueString(prop.id).subscribe(us => {
                                 this.uniqueStrings[prop.id] = us;
                             });
                         }
                     }
                 }
-                this.category = cat;
-            }
-        ));
-        /*rest.getCategory(2).subscribe(cat => {
-            for (let gp of cat.groupProperties){
-                for (let prop of gp.properties){
-                    if (prop.propType == PropertyType.Str){
-                        this.rest.getUniqueString(prop.id).subscribe(us => {
-                            this.uniqueStrings[prop.id] = us;
-                        });
-                    }
-                }
-            }
-            this.category = cat;
-        });*/
+                this.category = categories.category;
+            });
 
         this.priceEvent.subscribe(priceState => {
             if (priceState.isMax == true) {
@@ -158,6 +150,12 @@ export class FilterComponent {
     
     getPropertiesFromGroup(group: GroupProperty): Property[]{
         return group?.properties.sort((a,b) => {
+            if (a.propType == 1) {
+                return -1;
+            }
+            if (b.propType == 1) {
+                return 1
+            }
             if (a.propType < b.propType) return -1;
             if (a.propType == b.propType) return  0;
             if (a.propType > b.propType) return  1;
@@ -165,6 +163,7 @@ export class FilterComponent {
     }
     
     submit(){
+        this.submitEmitter.next();
         this.productModel.getProducts();
     }
     

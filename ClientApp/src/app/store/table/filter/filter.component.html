@@ -3,7 +3,7 @@
     <div class="filter__content">
         <div class="filter__body _spollers">
             <div sp-animate class="filter__section section-filter">
-                <div sp-title-section class="section-filter__title _spoller">Цена (руб.):</div>
+                <div sp-title-section class="section-filter__title">Цена (руб.):</div>
                 <div class="section-filter__body"
                      sp-body-section #spBody="spBody" 
                      [@sectionDisplay]="spBody.currentValue" (@sectionDisplay.done)="spBody.done()" >
@@ -28,8 +28,8 @@
                 </div>
             </div>
             <div sp-animate class="filter__section section-filter"
-                    *ngFor="let prop of getGlobalProperty()?.properties">
-                <div sp-title-section class="section-filter__title" [class._spoller]="prop?.propType == 2">{{prop?.name}}</div>
+                    *ngFor="let prop of getPropertiesFromGroup(getGlobalProperty())">
+                <div sp-title-section class="section-filter__title" [class._spoller]="prop.propType == 2">{{prop?.name}}</div>
                 <div class="section-filter__body"
                      sp-body-section #spBody="spBody"
                      [@sectionDisplay]="spBody.currentValue" (@sectionDisplay.done)="spBody.done()">
@@ -126,149 +126,6 @@
                     </div>
                 </div>
             </div>
-            <!--<div class="filter__section section-filter">
-                <div class="section-filter__title _spoller">Производитель:</div>
-                <div class="section-filter__body">
-                    <div class="filter__section section-subfilter">
-                        <div class="section-subfilter__title _spoller">Производитель2:</div>
-                        <div class="section-subfilter__body">
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Сlear-fit</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Diadora</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Hasttings</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Carbon-fitness</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Nordic Track</span></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="filter__section section-subfilter">
-                        <div class="section-subfilter__title _spoller">Производитель3:</div>
-                        <div class="section-subfilter__body">
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Сlear-fit</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Diadora</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Hasttings</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Carbon-fitness</span></span>
-                            </label>
-                            <label class="section-subfilter__checkbox checkbox">
-                                <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                                <span class="checkbox__text"><span>Nordic Track</span></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="filter__section section-subfilter">
-                        <div class="section-subfilter__title _spoller">Цена (руб.):</div>
-                        <div class="section-subfilter__body">
-                            <div class="price-subfilter">
-                                <div class="price-subfilter__values values-price-subfilter">
-                                    <div class="values-price-subfilter__column">
-                                        <div class="values-price-subfilter__label">от</div>
-                                        <div class="values-price-subfilter__input">
-                                            <input autocomplete="off" type="text" name="form[]" class="input">
-                                        </div>
-                                    </div>
-                                    <div class="values-price-subfilter__column">
-                                        <div class="values-price-subfilter__label">до</div>
-                                        <div class="values-price-subfilter__input">
-                                            <input autocomplete="off" type="text" name="form[]" class="input">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="filter__section section-filter">
-                <div class="section-filter__title _spoller">Мощность двигателя:</div>
-                <div class="section-filter__body">
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Сlear-fit</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Diadora</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Hasttings</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Carbon-fitness</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Nordic Track</span></span>
-                    </label>
-                </div>
-            </div>
-            <div class="filter__section section-filter">
-                <div class="section-filter__title _spoller">Размер бегового полотна:</div>
-                <div class="section-filter__body">
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Сlear-fit</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Diadora</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Hasttings</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Carbon-fitness</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>Nordic Track</span></span>
-                    </label>
-                </div>
-            </div>
-            <div class="filter__section section-filter">
-                <div class="section-filter__title">Угол наклона :</div>
-                <div class="section-filter__body">
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>нет регулировки</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>механическая</span></span>
-                    </label>
-                    <label class="section-filter__checkbox checkbox">
-                        <input data-error="Ошибка" class="checkbox__input" type="checkbox" value="1" name="form[]">
-                        <span class="checkbox__text"><span>электронная</span></span>
-                    </label>
-                </div>
-            </div>-->
         </div>
         <div class="filter__footer">
             <span (click)="submit()" class="filter__btn btn">Подобрать</span>

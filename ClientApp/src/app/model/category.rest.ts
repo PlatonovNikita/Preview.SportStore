@@ -17,6 +17,10 @@ export class CategoryRest{
     getCategory(id: number): Observable<Category>{
         return this.http.get<Category>(`${this.categoryUrl}/${id}`);
     }
+    
+    getCategoryByNickName(nickName: string): Observable<Category> {
+        return this.http.get<Category>(`${this.categoryUrl}/byNick/${nickName}`);
+    }
 
     getCategories(search?: string): Observable<Category[]>{
         let url = this.categoryUrl;

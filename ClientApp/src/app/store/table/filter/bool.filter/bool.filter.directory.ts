@@ -1,7 +1,7 @@
 ﻿import {Directive, HostBinding, HostListener, Inject, Input} from "@angular/core";
 import {Observable, Observer, Subject} from "rxjs";
 import {BoolFilterState} from "./bool.filter.state";
-import {CLEAR_EMITTER} from "../../../store.module";
+import {CLEAR_EMITTER} from "../filter.component";
 
 @Directive({
     selector: "[sp-bool-filter]"
