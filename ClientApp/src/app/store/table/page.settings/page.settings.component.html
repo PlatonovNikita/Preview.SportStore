@@ -1,0 +1,45 @@
+﻿<div class="catalog__navi navi-catalog navi-catalog_top">
+    <div class="navi-catalog__show show-catalog">
+        <div class="show-catalog__label">На странице:</div>
+        <div class="show-catalog__select">
+            <div [sp-page-size]="pageSize" (sp-change-size)="updateSize($event)" #disp="SpDisplay" class="select select_show select-form">
+                <div class="select__item">
+                    <div class="select__title" (click)="disp.display()">
+                        <div class="select__value icon-select-arrow">
+                            <span>{{disp.currentValue}}</span>
+                        </div>
+                    </div>
+                    <div class="select__options" [style.display]="disp.displayVal">
+                        <div [sp-option-size]="9" data-value="9" class="select__option">9</div>
+                        <div [sp-option-size]="18" data-value="18" class="select__option">18</div>
+                        <div [sp-option-size]="36" data-value="36" class="select__option">36</div>
+                        <div [sp-option-size]="108" data-value="108" class="select__option">108</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="navi-catalog__pages">
+        <div class="pagging">
+            <span (click)="previousPage()" class="pagging__arrow"></span>
+            <ul class="pagging__list">
+                <li *ngIf="afterHalf">
+                    <span [sp-nav-item]="1" class="pagging__item">1</span>
+                </li>
+                <li *ngIf="afterHalf">
+                    <span class="pagging__item">...</span>
+                </li>
+                <li *ngFor="let num of numberSet">
+                    <span [sp-nav-item]="num" class="pagging__item">{{num}}</span>
+                </li>
+                <li *ngIf="pagesCount > 7 && afterHalf == false">
+                    <span class="pagging__item">...</span>
+                </li>
+                <li *ngIf="pagesCount > 7 && afterHalf == false">
+                    <span [sp-nav-item]="pagesCount" class="pagging__item">{{pagesCount}}</span>
+                </li>
+            </ul>
+            <span (click)="nextPage()" class="pagging__arrow"></span>
+        </div>
+    </div>
+</div>
